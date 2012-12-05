@@ -639,10 +639,6 @@ puts " "
 # Added By Babis 
 #
 
-set link_rate_0_2 1;
-set load_0_2 0.9;
-set init_nr_flow_0_2 1000;
-
 ##### Param of Arrival Process ##############################
 
 #packet size is in bytes.
@@ -679,11 +675,12 @@ set n2	[$ns node]
 
 $ns duplex-link $n0 $n1	[set link_rate]Gb $mean_link_delay DropTail/RCP
 #Added By Babis
-$ns duplex-link $n0 $n2	[set link_rate_0_2]Gb $mean_link_delay DropTail/RCP
+$ns duplex-link $n0 $n2	[set link_rate]Gb $mean_link_delay DropTail/RCP
 
 
 set bnecklink [$ns link $n0 $n1] 
-
+#Add by Babis
+set bnecklink [$ns link $n0 $n2]
 #############################################################
 #Only for RCP
 #must set capacity for each queue to get load information
@@ -703,10 +700,10 @@ $q1 set print_status_ 0
 
 set l2 [$ns link $n0 $n2]
 set q2 [$l2 queue]
-$q0 set-link-capacity [expr $link_rate_0_2 * 90000000.0]
+$q0 set-link-capacity [expr $link_rate * 125000000.0]
 set l3 [$ns link $n2 $n0]
-set q4 [$l3 queue]
-$q1 set-link-capacity [expr $link_rate_0_2 * 90000000.0]
+set q3 [$l3 queue]
+$q1 set-link-capacity [expr $link_rate * 125000000.0]
 $q0 set print_status_ 1
 set rcplog_0_2 [open rcp_status_0_2.tr w]
 $q0 attach $rcplog_0_2
@@ -726,7 +723,7 @@ $agtagr0 attach-logfile $flowlog
 # Added by Babis 
 
 set agtagr_0_2 [new Agent_Aggr_pair]
-$agtagr_0_2 setup $n0 $n2 0 $init_nr_flow_0_2 "RCP_pair"
+$agtagr_0_2 setup $n0 $n2 0 $init_nr_flow "RCP_pair"
 set flowlog_0_2 [open flow_0_2.tr w]
 $agtagr_0_2 attach-logfile $flowlog_0_2
 
@@ -740,7 +737,7 @@ $agtagr0 init_schedule
 
 #Added by Babis
 $agtagr_0_2 set_PUarrival_process $lambda $minPkts $maxPkts $arrseed $pktseed
-$agtagr_0_2 init_scedule
+$agtagr_0_2 init_schedule
 
 
 puts "Simulation started!"
