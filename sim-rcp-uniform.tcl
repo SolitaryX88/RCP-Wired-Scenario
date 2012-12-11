@@ -680,7 +680,7 @@ $ns duplex-link $n0 $n2	[set link_rate]Gb $mean_link_delay DropTail/RCP
 
 set bnecklink [$ns link $n0 $n1] 
 #Add by Babis
-set bnecklink [$ns link $n0 $n2]
+#set bnecklink [$ns link $n0 $n2]
 #############################################################
 #Only for RCP
 #must set capacity for each queue to get load information
@@ -696,18 +696,19 @@ set rcplog [open rcp_status.tr w]
 $q0 attach $rcplog
 $q1 set print_status_ 0
 
+
 #Added by Babis
 
 set l2 [$ns link $n0 $n2]
 set q2 [$l2 queue]
-$q0 set-link-capacity [expr $link_rate * 125000000.0]
+$q2 set-link-capacity [expr $link_rate * 125000000.0]
 set l3 [$ns link $n2 $n0]
 set q3 [$l3 queue]
-$q1 set-link-capacity [expr $link_rate * 125000000.0]
-$q0 set print_status_ 1
+$q3 set-link-capacity [expr $link_rate * 125000000.0]
+$q2 set print_status_ 1
 set rcplog_0_2 [open rcp_status_0_2.tr w]
-$q0 attach $rcplog_0_2
-$q1 set print_status_ 0
+$q2 attach $rcplog_0_2
+$q3 set print_status_ 0
 
 
 #############  Agents          #########################
