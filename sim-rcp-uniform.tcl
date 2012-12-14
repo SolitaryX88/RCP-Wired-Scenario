@@ -54,10 +54,10 @@ RCP_pair instproc set_debug_mode { mode } {
     $self set debug_mode $mode
 }
 
-RCP_pair instproc setup {snode dnode} {
+RCP_pair instproc setup {snode dnode link_rate} {
 #Directly connect agents to snode, dnode.
 #For faster simulation.
-    global ns link_rate
+    global ns 
     $self instvar rcps rcpr;# Sender RCP,  Receiver RCP
     $self instvar san dan  ;# memorize dumbell node (to attach)
 
@@ -304,7 +304,7 @@ Agent_Aggr_pair instproc attach-logfile { logf } {
     $self set logfile $logf
 }
 
-Agent_Aggr_pair instproc setup {snode dnode gid nr agent_pair_type} {
+Agent_Aggr_pair instproc setup {snode dnode gid nr agent_pair_type link_rate} {
 #Public
 #Note:
 #Create nr pairs of Agent_pair
@@ -322,7 +322,7 @@ Agent_Aggr_pair instproc setup {snode dnode gid nr agent_pair_type} {
 
     for {set i 0} {$i < $nr_pairs} {incr i} {
  	$self set apair($i) [new $agent_pair_type]
-	$apair($i) setup $snode $dnode
+	$apair($i) setup $snode $dnode $link_rate
 	$apair($i) setgid $group_id  ;# let each pair know our group id
 	$apair($i) setpairid $i      ;# let each pair know his pair id
     }
@@ -718,7 +718,7 @@ set agtagr0 [new Agent_Aggr_pair]
 
 puts "Creating initial $init_nr_flow agents ..."; flush stdout
 
-$agtagr0 setup $n0 $n1 0 $init_nr_flow "RCP_pair"
+$agtagr0 setup $n0 $n1 0 $init_nr_flow "RCP_pair" $link_rate
 
 set flowlog [open flow.tr w]
 $agtagr0 attach-logfile $flowlog
@@ -726,7 +726,7 @@ $agtagr0 attach-logfile $flowlog
 # Added by Babis 
 
 set agtagr_0_2 [new Agent_Aggr_pair]
-$agtagr_0_2 setup $n0 $n2 0 $init_nr_flow "RCP_pair"
+$agtagr_0_2 setup $n0 $n2 0 $init_nr_flow "RCP_pair" $link_rate
 set flowlog_0_2 [open flow_0_2.tr w]
 $agtagr_0_2 attach-logfile $flowlog_0_2
 
