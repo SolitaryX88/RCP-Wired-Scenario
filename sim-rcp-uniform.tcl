@@ -695,7 +695,9 @@ $q0 set print_status_ 1
 set rcplog [open rcp_status.tr w]
 $q0 attach $rcplog
 $q1 set print_status_ 0
-
+#Gettter TCL GET
+#set printstatus [$q1 set print_status_]
+#puts "Print status: $printstatus"
 
 #Added by Babis
 

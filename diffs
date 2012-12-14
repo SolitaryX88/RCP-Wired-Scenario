@@ -1,0 +1,100 @@
+diff --git a/sim-rcp-uniform.tcl b/sim-rcp-uniform.tcl
+index ba38be4..3ab0a42 100644
+--- a/sim-rcp-uniform.tcl
++++ b/sim-rcp-uniform.tcl
+@@ -635,6 +635,14 @@ puts "maxPkts $maxPkts"
+ puts "mean flow size $mean_npkts pkts"
+ puts " "
+ 
++#
++# Added By Babis 
++#
++
++set link_rate_0_2 1;
++set load_0_2 0.9;
++set init_nr_flow_0_2 1000;
++
+ ##### Param of Arrival Process ##############################
+ 
+ #packet size is in bytes.
+@@ -666,7 +674,13 @@ puts "queueSize $queueSize packets"
+ set n0    [$ns node]
+ set n1    [$ns node]
+ 
+-$ns duplex-link $n0 $n1    [set link_rate]Gb $mean_link_delay DropTail/RCP
++#Added By Babis
++set n2	[$ns node]
++
++$ns duplex-link $n0 $n1	[set link_rate]Gb $mean_link_delay DropTail/RCP
++#Added By Babis
++$ns duplex-link $n0 $n2	[set link_rate_0_2]Gb $mean_link_delay DropTail/RCP
++
+ 
+ set bnecklink [$ns link $n0 $n1] 
+ 
+@@ -685,6 +699,20 @@ set rcplog [open rcp_status.tr w]
+ $q0 attach $rcplog
+ $q1 set print_status_ 0
+ 
++#Added by Babis
++
++set l2 [$ns link $n0 $n2]
++set q2 [$l2 queue]
++$q0 set-link-capacity [expr $link_rate_0_2 * 90000000.0]
++set l3 [$ns link $n2 $n0]
++set q4 [$l3 queue]
++$q1 set-link-capacity [expr $link_rate_0_2 * 90000000.0]
++$q0 set print_status_ 1
++set rcplog_0_2 [open rcp_status_0_2.tr w]
++$q0 attach $rcplog_0_2
++$q1 set print_status_ 0
++
++
+ #############  Agents          #########################
+ set agtagr0 [new Agent_Aggr_pair]
+ 
+@@ -695,6 +723,14 @@ $agtagr0 setup $n0 $n1 0 $init_nr_flow "RCP_pair"
+ set flowlog [open flow.tr w]
+ $agtagr0 attach-logfile $flowlog
+ 
++# Added by Babis 
++
++set agtagr_0_2 [new Agent_Aggr_pair]
++$agtagr_0_2 setup $n0 $n2 0 $init_nr_flow_0_2 "RCP_pair"
++set flowlog_0_2 [open flow_0_2.tr w]
++$agtagr_0_2 attach-logfile $flowlog_0_2
++
++
+ puts "Initial agent creation done";flush stdout
+ 
+ #For Poisson/Uniform
+@@ -702,12 +738,17 @@ $agtagr0 set_PUarrival_process $lambda $minPkts $maxPkts $arrseed $pktseed
+ 
+ $agtagr0 init_schedule
+ 
++#Added by Babis
++$agtagr_0_2 set_PUarrival_process $lambda $minPkts $maxPkts $arrseed $pktseed
++$agtagr_0_2 init_scedule
++
++
+ puts "Simulation started!"
+ 
+ #$ns at 0.0 "check_fin"
+ 
+ proc check_fin {} {
+-    global ns agtagr0 numflows
++    global ns agtagr0 agtagr_0_2 numflows
+     set nrf [$agtagr0 set stat_nr_finflow]
+     if { $nrf > $numflows } {
+ 	$agtagr0 statistics
+@@ -734,8 +775,10 @@ proc finish {} {
+     $ns flush-trace
+     close $qf
+     close $flowlog
++    close $flowlog_0_2
+ 
+     close $rcplog
++    close $rcplog_0_2
+ 
+     set t [clock seconds]
+     puts "Simulation Finished!"
