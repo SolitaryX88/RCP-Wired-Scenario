@@ -639,6 +639,27 @@ puts " "
 # Added By Babis 
 #
 
+set link_rate_b 1
+set mean_link_delay_b 0.08
+set load_b 0.8
+# numbneck the same
+#RCP alpha & beta they stay the same
+set init_nr_flow_b 1000
+set minPkts_b 10
+set maxPkts_b 30
+set mean_npkts_b 20
+
+puts "Added by Babis"
+puts "Second RCP flow"
+puts "link_rate: $link_rate_b Gbps"
+puts "RTT [expr $mean_link_delay_b * 2.0] sec" 
+puts "load $load_b"
+puts "numbneck / alpha / beta are the same"
+puts "init_nr_flows $init_nr_flow_b"
+puts "Min / Max pkts: $minPkts_b / $maxPkts_b"
+puts "Mean flow size: $mean_npkts_b"
+
+
 ##### Param of Arrival Process ##############################
 
 #packet size is in bytes.
@@ -658,6 +679,11 @@ Agent/RCP set packetSize_ $pktSize
 Queue/DropTail/RCP set alpha_ $rcpalpha
 Queue/DropTail/RCP set beta_  $rcpbeta
 
+#Added by Babis
+
+set lambda_b [expr ($link_rate_b*$load_b*1000000000)/($mean_npkts_b*($pktSize+40)*8.0)]
+puts "Arrival: Poisson with lambda $lambda_b, FlowSize: Uniform with minPkts $minPkts_b maxPkts $maxPkts_b avg $mean_npkts_b pkts"
+
 ############ Buffer SIZE ######################
 
 #In case RCP, as much as possible
@@ -675,12 +701,12 @@ set n2	[$ns node]
 
 $ns duplex-link $n0 $n1	[set link_rate]Gb $mean_link_delay DropTail/RCP
 #Added By Babis
-$ns duplex-link $n0 $n2	[set link_rate]Gb $mean_link_delay DropTail/RCP
+$ns duplex-link $n0 $n2	[set link_rate_b]Gb $mean_link_delay_b DropTail/RCP
 
 
 set bnecklink [$ns link $n0 $n1] 
 #Add by Babis
-#set bnecklink [$ns link $n0 $n2]
+set bnecklink_b [$ns link $n0 $n2]
 #############################################################
 #Only for RCP
 #must set capacity for each queue to get load information
@@ -703,13 +729,13 @@ $q1 set print_status_ 0
 
 set l2 [$ns link $n0 $n2]
 set q2 [$l2 queue]
-$q2 set-link-capacity [expr $link_rate * 125000000.0]
+$q2 set-link-capacity [expr $link_rate_b * 125000000.0]
 set l3 [$ns link $n2 $n0]
 set q3 [$l3 queue]
-$q3 set-link-capacity [expr $link_rate * 125000000.0]
+$q3 set-link-capacity [expr $link_rate_b * 125000000.0]
 $q2 set print_status_ 1
-set rcplog_0_2 [open rcp_status_0_2.tr w]
-$q2 attach $rcplog_0_2
+set rcplog_b [open rcp_status_b.tr w]
+$q2 attach $rcplog_b
 $q3 set print_status_ 0
 
 
@@ -725,10 +751,10 @@ $agtagr0 attach-logfile $flowlog
 
 # Added by Babis 
 
-set agtagr_0_2 [new Agent_Aggr_pair]
-$agtagr_0_2 setup $n0 $n2 0 $init_nr_flow "RCP_pair" $link_rate
-set flowlog_0_2 [open flow_0_2.tr w]
-$agtagr_0_2 attach-logfile $flowlog_0_2
+set agtagr_b [new Agent_Aggr_pair]
+$agtagr_b setup $n0 $n2 0 $init_nr_flow "RCP_pair" $link_rate
+set flowlog_b [open flow_b.tr w]
+$agtagr_b attach-logfile $flowlog_b
 
 
 puts "Initial agent creation done";flush stdout
@@ -739,8 +765,8 @@ $agtagr0 set_PUarrival_process $lambda $minPkts $maxPkts $arrseed $pktseed
 $agtagr0 init_schedule
 
 #Added by Babis
-$agtagr_0_2 set_PUarrival_process $lambda $minPkts $maxPkts $arrseed $pktseed
-$agtagr_0_2 init_schedule
+$agtagr_b set_PUarrival_process $lambda_b $minPkts_b $maxPkts_b $arrseed $pktseed
+$agtagr_b init_schedule
 
 
 puts "Simulation started!"
@@ -748,10 +774,16 @@ puts "Simulation started!"
 #$ns at 0.0 "check_fin"
 
 proc check_fin {} {
-    global ns agtagr0 agtagr_0_2 numflows
+    global ns agtagr0 agtagr_b numflows
     set nrf [$agtagr0 set stat_nr_finflow]
     if { $nrf > $numflows } {
 	$agtagr0 statistics
+	finish
+    }
+	
+    set nrf_b [$agtagr_b set stat_nr_finflow]
+    if { $nrf_b > $numflows } {
+	$agtagr_b statistics
 	finish
     }
 #puts "nr_finflow $nrf"
@@ -764,21 +796,27 @@ set qf [open queue.tr w]
 set qm [$ns monitor-queue $n0 $n1 $qf 0.1]
 $bnecklink queue-sample-timeout
 
+#Added by Babis
+set qf_b [open queue_b.tr w]
+set qm_b [$ns monitor-queue $n0 $n2 $qf_b 0.1]
+$bnecklink_b queue-sample-timeout
+
 $ns at $sim_end "finish"
 
 proc finish {} {
-    global ns qf flowlog
+    global ns qf qf_b flowlog flowlog_b
     global sim_start
 
-    global rcplog
+    global rcplog rcplog_b
 
     $ns flush-trace
     close $qf
+    close $qf_b
     close $flowlog
-    close $flowlog_0_2
+    close $flowlog_b
 
     close $rcplog
-    close $rcplog_0_2
+    close $rcplog_b
 
     set t [clock seconds]
     puts "Simulation Finished!"
