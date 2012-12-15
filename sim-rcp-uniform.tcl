@@ -15,8 +15,8 @@ Class RCP_pair
 #pair_id  :  group id
 #id       :  flow id
 #Public Functions:
-#setup{snode dnode}       <- either of them
-#setup_wnode{snode dnode} <- must be called
+#setup{snode dnode link_rate}       <- either of them
+#setup_wnode{snode dnode link_rate} <- must be called
 #setgid {gid}             <- if applicable (default 0)
 #setpairid {pid}          <- if applicable (default 0)
 #setfid {fid}             <- if applicable (default 0)
@@ -70,7 +70,7 @@ RCP_pair instproc setup {snode dnode link_rate} {
     $ns connect $rcps $rcpr
 }
 
-RCP_pair instproc setup_wnode {snode dnode link_dly} {
+RCP_pair instproc setup_wnode {snode dnode link_dly link_rate} {
 
 #New nodes are allocated for sender/receiver agents.
 #They are connected to snode/dnode with link having delay of link_dly.
@@ -78,7 +78,7 @@ RCP_pair instproc setup_wnode {snode dnode link_dly} {
 #and memory consumption gets very very large..
 #Use "setup" if possible in such cases.
 
-    global ns link_rate
+    global ns
     $self instvar sn dn    ;# Source Node, Dest Node
     $self instvar rcps rcpr;# Sender RCP,  Receiver RCP
     $self instvar san dan  ;# memorize dumbell node (to attach)
@@ -280,7 +280,7 @@ Class Agent_Aggr_pair
 
 #Public functions:
 #attach-logfile {logf}  <- call if want logfile
-#setup {snode dnode gid nr} <- must 
+#setup {snode dnode gid nr link_rate} <- must 
 #set_PParrival_process {lambda mean_npkts shape rands1 rands2}  <- call either
 #set_PEarrival_process {lambda mean_npkts rands1 rands2}        <- 
 #set_PBarrival_process {lambda mean_npkts S1 S2 rands1 rands2}  <- of them
