@@ -752,7 +752,7 @@ $agtagr0 attach-logfile $flowlog
 # Added by Babis 
 
 set agtagr_b [new Agent_Aggr_pair]
-$agtagr_b setup $n0 $n2 0 $init_nr_flow "RCP_pair" $link_rate
+$agtagr_b setup $n0 $n2 1 $init_nr_flow "RCP_pair" $link_rate
 set flowlog_b [open flow_b.tr w]
 $agtagr_b attach-logfile $flowlog_b
 
@@ -814,6 +814,9 @@ proc finish {} {
     close $qf_b
     close $flowlog
     close $flowlog_b
+
+#    close $nf
+#    close $tf	
 
     close $rcplog
     close $rcplog_b
