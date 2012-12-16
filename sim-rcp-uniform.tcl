@@ -695,8 +695,8 @@ puts "Arrival: Poisson with lambda $lambda_b, FlowSize: Uniform with minPkts $mi
 # The lambda 2400Mb its a redundancy
 
 set lambda_2400Mb [expr (2.4*$load*1000000000)/($mean_npkts*($pktSize+40)*8.0)]
-set lambda_2000Mb [expr (2*$load_b*1000000000)/($mean_npkts*($pktSize+40)*8.0)]
-set lambda_1000Mb [expr (1*$load_b*1000000000)/($mean_npkts*($pktSize+40)*8.0)]
+set lambda_2000Mb [expr (2.0*$load*1000000000)/($mean_npkts*($pktSize+40)*8.0)]
+set lambda_1000Mb [expr (1.0*$load*1000000000)/($mean_npkts*($pktSize+40)*8.0)]
 
 ############ Buffer SIZE ######################
 
@@ -830,7 +830,8 @@ puts "Creating initial $init_nr_flow agents ..."; flush stdout
 
 #The first flow 
 $agtagr_0_3 setup $node_(0) $node_(3) 1 $init_nr_flow "RCP_pair" $link_rate_1000Mb
-
+set flowlog_0_3 [open flow_0_3.tr w]
+$agtagr_0_3 attach-logfile $flowlog_0_3
 
 #The second flow
 $agtagr_2_5 setup $node_(2) $node_(5) 2 $init_nr_flow "RCP_pair" $link_rate_2000Mb
@@ -859,7 +860,11 @@ puts "Initial agent creation done";flush stdout
 
 #For Poisson/Uniform
 $agtagr_0_3 set_PUarrival_process $lambda_1000Mb $minPkts $maxPkts $arrseed $pktseed
-$agtagr_2_5 set_PUarrival_process $lambda_2000Mb $minPkts $maxPkts $arrseed $pktseed
+#$agtagr_2_5 set_PUarrival_process $lambda_2000Mb $minPkts $maxPkts $arrseed $pktseed
+
+$agtagr_0_3 init_schedule
+#$agtagr_2_5 init_schedule
+
 
 #$agtagr0 set_PUarrival_process $lambda $minPkts $maxPkts $arrseed $pktseed
 #$agtagr0 init_schedule
