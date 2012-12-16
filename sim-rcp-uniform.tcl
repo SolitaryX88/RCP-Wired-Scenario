@@ -635,10 +635,8 @@ puts "maxPkts $maxPkts"
 puts "mean flow size $mean_npkts pkts"
 puts " "
 
-#
-#  Babis 
-#
 
+#  Babis 
 set link_rate_b 1
 set mean_link_delay_b 0.08
 set load_b 0.8
@@ -658,6 +656,14 @@ puts "numbneck / alpha / beta are the same"
 puts "init_nr_flows $init_nr_flow_b"
 puts "Min / Max pkts: $minPkts_b / $maxPkts_b"
 puts "Mean flow size: $mean_npkts_b"
+puts " "
+
+# Link Rates extra added
+
+set link_rate_1000Mb 1
+set link_rate_2000Mb 2
+# The next is redundant
+set link_rate_2400Mb [set $link_rate] 
 
 
 ##### Param of Arrival Process ##############################
@@ -684,6 +690,14 @@ Queue/DropTail/RCP set beta_  $rcpbeta
 set lambda_b [expr ($link_rate_b*$load_b*1000000000)/($mean_npkts_b*($pktSize+40)*8.0)]
 puts "Arrival: Poisson with lambda $lambda_b, FlowSize: Uniform with minPkts $minPkts_b maxPkts $maxPkts_b avg $mean_npkts_b pkts"
 
+# Babis
+# Setting my extra lambdas each one for a link.
+# The lambda 2400Mb its a redundancy
+
+set lambda_2400Mb [expr (2.4*$load*1000000000)/($mean_npkts*($pktSize+40)*8.0)]
+set lambda_2000Mb [expr (2*$load_b*1000000000)/($mean_npkts*($pktSize+40)*8.0)]
+set lambda_1000Mb [expr (1*$load_b*1000000000)/($mean_npkts*($pktSize+40)*8.0)]
+
 ############ Buffer SIZE ######################
 
 #In case RCP, as much as possible
@@ -706,17 +720,17 @@ for {set i 0} {$i < $numnodes } {incr i} {
 #
 
 # The 1st flow
-$ns duplex-link $node_(0) $node_(1) 1Gb $mean_link_delay DropTail/RCP
-$ns duplex-link $node_(4) $node_(3) 1Gb $mean_link_delay DropTail/RCP
+$ns duplex-link $node_(0) $node_(1) [set $link_rate_1000Mb]Gb $mean_link_delay DropTail/RCP
+$ns duplex-link $node_(4) $node_(3) [set $link_rate_1000Mb]Gb $mean_link_delay DropTail/RCP
 
 # The 2nd flow
 
-$ns duplex-link $node_(2) $node_(1) 2Gb $mean_link_delay DropTail/RCP
-$ns duplex-link $node_(4) $node_(5) 2Gb $mean_link_delay DropTail/RCP
+$ns duplex-link $node_(2) $node_(1) [set $link_rate_2000Mb]Gb $mean_link_delay DropTail/RCP
+$ns duplex-link $node_(4) $node_(5) [set $link_rate_2000Mb]Gb $mean_link_delay DropTail/RCP
 
 # The bottleneck
 
-$ns duplex-link $node_(1) $node_(4) 2.4Gb $mean_link_delay DropTail/RCP
+$ns duplex-link $node_(1) $node_(4) [set $link_rate_2400Mb]Gb $mean_link_delay DropTail/RCP
 
 set bottleneck [$ns link $node_(1) $node_(4)]
 
@@ -741,6 +755,48 @@ set bnecklink_b [$ns link $n0 $n2]
 #Only for RCP
 #must set capacity for each queue to get load information
 #############################################################
+# Babis
+
+# For the first RCP flow
+
+set link_0_1 [$ns link $node(0) $node_(1)]
+set queue_0_1 [$link_0_1 queue]
+$queue_0_1 set-link-capacity [expr $link_rate_1000Mb * 125000000.0]
+
+set link_4_3 [$ns link $node(4) $node_(3)]
+set queue_4_3 [$link_4_3 queue]
+$queue_4_3 set-link-capacity [expr $link_rate_1000Mb * 125000000.0]
+
+
+# The second RCP flow
+
+set link_2_1 [$ns link $node(2) $node_(1)]
+set queue_2_1 [$link_2_1 queue]
+$queue_2_1 set-link-capacity [expr $link_rate_2000Mb * 125000000.0]
+
+set link_4_5 [$ns link $node(4) $node_(5)]
+set queue_4_5 [$link_4_5 queue]
+$queue_4_5 set-link-capacity [expr $link_rate_2000Mb * 125000000.0]
+
+
+# The bottleneck load information
+set link_1_4 [$ns link $node(1) $node_(4)]
+set queue_1_4 [$link_1_4 queue]
+$queue_1_4 set-link-capacity [expr $link_rate_2400Mb * 125000000.0]
+
+##
+## RCP log trace file must be added here like the following
+##
+
+
+set l1 [$ns link $n1 $n0]
+set q1 [$l1 queue]
+$q1 set-link-capacity [expr $link_rate * 125000000.0]
+$q0 set print_status_ 1
+set rcplog [open rcp_status.tr w]
+$q0 attach $rcplog
+$q1 set print_status_ 0
+
 set l0 [$ns link $n0 $n1]
 set q0 [$l0 queue]
 $q0 set-link-capacity [expr $link_rate * 125000000.0]
@@ -751,9 +807,6 @@ $q0 set print_status_ 1
 set rcplog [open rcp_status.tr w]
 $q0 attach $rcplog
 $q1 set print_status_ 0
-#Gettter TCL GET
-#set printstatus [$q1 set print_status_]
-#puts "Print status: $printstatus"
 
 # Babis
 
