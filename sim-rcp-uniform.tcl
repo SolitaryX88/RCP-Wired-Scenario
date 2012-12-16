@@ -636,7 +636,7 @@ puts "mean flow size $mean_npkts pkts"
 puts " "
 
 #
-# Added By Babis 
+#  Babis 
 #
 
 set link_rate_b 1
@@ -649,7 +649,7 @@ set minPkts_b 10
 set maxPkts_b 30
 set mean_npkts_b 20
 
-puts "Added by Babis"
+puts " Babis"
 puts "Second RCP flow"
 puts "link_rate: $link_rate_b Gbps"
 puts "RTT [expr $mean_link_delay_b * 2.0] sec" 
@@ -679,7 +679,7 @@ Agent/RCP set packetSize_ $pktSize
 Queue/DropTail/RCP set alpha_ $rcpalpha
 Queue/DropTail/RCP set beta_  $rcpbeta
 
-#Added by Babis
+# Babis
 
 set lambda_b [expr ($link_rate_b*$load_b*1000000000)/($mean_npkts_b*($pktSize+40)*8.0)]
 puts "Arrival: Poisson with lambda $lambda_b, FlowSize: Uniform with minPkts $minPkts_b maxPkts $maxPkts_b avg $mean_npkts_b pkts"
@@ -693,20 +693,50 @@ Queue set limit_ $queueSize
 puts "queueSize $queueSize packets"
 
 ############# Topoplgy #########################
+
+
+set numnodes 6.0
+##The number of the nodes generated
+
+for {set i 0} {$i < $numnodes } {incr i} {
+	set node_($i) [$ns node]	
+	}
+#
+## Linking the nodes for a more complex RCP Scenario
+#
+
+# The 1st flow
+$ns duplex-link $node_(0) $node_(1) 1Gb $mean_link_delay DropTail/RCP
+$ns duplex-link $node_(4) $node_(3) 1Gb $mean_link_delay DropTail/RCP
+
+# The 2nd flow
+
+$ns duplex-link $node_(2) $node_(1) 2Gb $mean_link_delay DropTail/RCP
+$ns duplex-link $node_(4) $node_(5) 2Gb $mean_link_delay DropTail/RCP
+
+# The bottleneck
+
+$ns duplex-link $node_(1) $node_(4) 2.4Gb $mean_link_delay DropTail/RCP
+
+set bottleneck [$ns link $node_(1) $node_(4)]
+
 set n0    [$ns node]
 set n1    [$ns node]
 
-#Added By Babis
+# Babis
 set n2	[$ns node]
 
 $ns duplex-link $n0 $n1	[set link_rate]Gb $mean_link_delay DropTail/RCP
-#Added By Babis
+# Babis
 $ns duplex-link $n0 $n2	[set link_rate_b]Gb $mean_link_delay_b DropTail/RCP
+
+
 
 
 set bnecklink [$ns link $n0 $n1] 
 #Add by Babis
 set bnecklink_b [$ns link $n0 $n2]
+
 #############################################################
 #Only for RCP
 #must set capacity for each queue to get load information
@@ -725,7 +755,7 @@ $q1 set print_status_ 0
 #set printstatus [$q1 set print_status_]
 #puts "Print status: $printstatus"
 
-#Added by Babis
+# Babis
 
 set l2 [$ns link $n0 $n2]
 set q2 [$l2 queue]
@@ -749,7 +779,7 @@ $agtagr0 setup $n0 $n1 0 $init_nr_flow "RCP_pair" $link_rate
 set flowlog [open flow.tr w]
 $agtagr0 attach-logfile $flowlog
 
-# Added by Babis 
+#  Babis 
 
 set agtagr_b [new Agent_Aggr_pair]
 $agtagr_b setup $n0 $n2 1 $init_nr_flow "RCP_pair" $link_rate
@@ -764,7 +794,7 @@ $agtagr0 set_PUarrival_process $lambda $minPkts $maxPkts $arrseed $pktseed
 
 $agtagr0 init_schedule
 
-#Added by Babis
+# Babis
 $agtagr_b set_PUarrival_process $lambda_b $minPkts_b $maxPkts_b $arrseed $pktseed
 $agtagr_b init_schedule
 
@@ -796,7 +826,7 @@ set qf [open queue.tr w]
 set qm [$ns monitor-queue $n0 $n1 $qf 0.1]
 $bnecklink queue-sample-timeout
 
-#Added by Babis
+# Babis
 set qf_b [open queue_b.tr w]
 set qm_b [$ns monitor-queue $n0 $n2 $qf_b 0.1]
 $bnecklink_b queue-sample-timeout
