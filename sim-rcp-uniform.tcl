@@ -788,15 +788,6 @@ $queue_1_4 set-link-capacity [expr $link_rate_2400Mb * 125000000.0]
 ## RCP log trace file must be added here like the following
 ##
 
-
-set l1 [$ns link $n1 $n0]
-set q1 [$l1 queue]
-$q1 set-link-capacity [expr $link_rate * 125000000.0]
-$q0 set print_status_ 1
-set rcplog [open rcp_status.tr w]
-$q0 attach $rcplog
-$q1 set print_status_ 0
-
 set l0 [$ns link $n0 $n1]
 set q0 [$l0 queue]
 $q0 set-link-capacity [expr $link_rate * 125000000.0]
@@ -807,8 +798,11 @@ $q0 set print_status_ 1
 set rcplog [open rcp_status.tr w]
 $q0 attach $rcplog
 $q1 set print_status_ 0
+#Gettter TCL GET
+#set printstatus [$q1 set print_status_]
+#puts "Print status: $printstatus"
 
-# Babis
+#Added by Babis
 
 set l2 [$ns link $n0 $n2]
 set q2 [$l2 queue]
@@ -820,7 +814,6 @@ $q2 set print_status_ 1
 set rcplog_b [open rcp_status_b.tr w]
 $q2 attach $rcplog_b
 $q3 set print_status_ 0
-
 
 #############  Agents          #########################
 set agtagr0 [new Agent_Aggr_pair]
