@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-$sim_end = 300;
+$sim_end = 10;
 $cap = 2.4;
 $rtt = 0.1;
 $alpha = 0.1;

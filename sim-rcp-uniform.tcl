@@ -699,67 +699,65 @@ puts "queueSize $queueSize packets"
 ############# Topoplgy #########################
 
 #Topology
-#  n1
+#  node_(1)
 #     \	
-#	n0 -- n3
+#	node_(0) -- node_(3)
 #     /
-#  n2
+#  node_(2)
 #
 
-set n0    [$ns node]
-set n1    [$ns node]
+set numnodes 6.0
+##The number of the nodes generated
 
+for {set i 0} {$i < $numnodes } {incr i} {
+set node_($i) [$ns node]	
+}
+
+$ns duplex-link $node_(0) $node_(1)	[set link_rate]Gb $mean_link_delay DropTail/RCP
 #Added By Babis
-set n2	[$ns node]
-set n3  [$ns node]
-
-$ns duplex-link $n0 $n1	[set link_rate]Gb $mean_link_delay DropTail/RCP
-#Added By Babis
-$ns duplex-link $n0 $n2	[set link_rate_b]Gb $mean_link_delay_b DropTail/RCP
-$ns duplex-link $n0 $n3 [set link_rate]Gb $mean_link_delay DropTail/RCP
+$ns duplex-link $node_(0) $node_(2)	[set link_rate_b]Gb $mean_link_delay_b DropTail/RCP
+$ns duplex-link $node_(0) $node_(3) 	[set link_rate]Gb $mean_link_delay DropTail/RCP
 
 
-set bnecklink [$ns link $n0 $n1] 
+set bnecklink_0_1 [$ns link $node_(0) $node_(1)] 
 #Add by Babis
-set bnecklink_b [$ns link $n0 $n2]
-set btneck_0_3 	[$ns link $n0 $n3]
+set bnecklink_0_2 [$ns link $node_(0) $node_(2)]
+set bnecklink_0_3 [$ns link $node_(0) $node_(3)]
 
 #############################################################
 #Only for RCP
 #must set capacity for each queue to get load information
 #############################################################
-set l0 [$ns link $n0 $n1]
-set q0 [$l0 queue]
-$q0 set-link-capacity [expr $link_rate * 125000000.0]
-set l1 [$ns link $n1 $n0]
-set q1 [$l1 queue]
-$q1 set-link-capacity [expr $link_rate * 125000000.0]
-$q0 set print_status_ 1
-set rcplog [open rcp_status.tr w]
-$q0 attach $rcplog
-$q1 set print_status_ 0
-#Gettter TCL GET
-#set printstatus [$q1 set print_status_]
-#puts "Print status: $printstatus"
+set l_0_1 [$ns link $node_(0) $node_(1)]
+set q_0_1 [$l_0_1 queue]
+$q_0_1 set-link-capacity [expr $link_rate * 125000000.0]
+set l_1_0 [$ns link $node_(1) $node_(0)]
+set q_1_0 [$l_1_0 queue]
+$q_1_0 set-link-capacity [expr $link_rate * 125000000.0]
+$q_0_1 set print_status_ 1
+set rcplog_0_1 [open rcp_status.tr w]
+$q_0_1 attach $rcplog_0_1
+$q_1_0 set print_status_ 0
+
 
 #Added by Babis
 
-set l2 [$ns link $n0 $n2]
-set q2 [$l2 queue]
-$q2 set-link-capacity [expr $link_rate_b * 125000000.0]
-set l3 [$ns link $n2 $n0]
-set q3 [$l3 queue]
-$q3 set-link-capacity [expr $link_rate_b * 125000000.0]
-$q2 set print_status_ 1
-set rcplog_b [open rcp_status_b.tr w]
-$q2 attach $rcplog_b
-$q3 set print_status_ 0
+set l_0_2 [$ns link $node_(0) $node_(2)]
+set q_0_2 [$l_0_2 queue]
+$q_0_2 set-link-capacity [expr $link_rate_b * 125000000.0]
+set l_2_0 [$ns link $node_(2) $node_(0)]
+set q_2_0 [$l_2_0 queue]
+$q_2_0 set-link-capacity [expr $link_rate_b * 125000000.0]
+$q_0_2 set print_status_ 1
+set rcplog_0_2 [open rcp_status_0_2.tr w]
+$q_0_2 attach $rcplog_0_2
+$q_2_0 set print_status_ 0
 
 
-set l_0_3 [$ns link $n0 $n3]
+set l_0_3 [$ns link $node_(0) $node_(3)]
 set q_0_3 [$l_0_3 queue]
 $q_0_3 set-link-capacity [expr $link_rate * 125000000.0]
-set l_3_0 [$ns link $n3 $n0]
+set l_3_0 [$ns link $node_(3) $node_(0)]
 set q_3_0 [$l_3_0 queue]
 $q_3_0 set-link-capacity [expr $link_rate * 125000000.0]
 $q_0_3 set print_status_ 1
@@ -773,17 +771,17 @@ set agtagr0 [new Agent_Aggr_pair]
 
 puts "Creating initial $init_nr_flow agents ..."; flush stdout
 
-$agtagr0 setup $n1 $n0 0 $init_nr_flow "RCP_pair" $link_rate
+$agtagr0 setup $node_(1) $node_(0) 0 $init_nr_flow "RCP_pair" $link_rate
 
 set flowlog [open flow.tr w]
 $agtagr0 attach-logfile $flowlog
 
 # Added by Babis 
 
-set agtagr_b [new Agent_Aggr_pair]
-$agtagr_b setup $n2 $n3 1 $init_nr_flow "RCP_pair" $link_rate
-set flowlog_b [open flow_b.tr w]
-$agtagr_b attach-logfile $flowlog_b
+set agtagr_2_3 [new Agent_Aggr_pair]
+$agtagr_2_3 setup $node_(2) $node_(3) 1 $init_nr_flow "RCP_pair" $link_rate
+set flowlog_2_3 [open flow_b.tr w]
+$agtagr_2_3 attach-logfile $flowlog_2_3
 
 
 
@@ -796,8 +794,8 @@ $agtagr0 set_PUarrival_process $lambda $minPkts $maxPkts $arrseed $pktseed
 $agtagr0 init_schedule
 
 #Added by Babis
-$agtagr_b set_PUarrival_process $lambda_b $minPkts_b $maxPkts_b $arrseed $pktseed
-$agtagr_b init_schedule
+$agtagr_2_3 set_PUarrival_process $lambda_b $minPkts_b $maxPkts_b $arrseed $pktseed
+$agtagr_2_3 init_schedule
 
 
 puts "Simulation started!"
@@ -805,16 +803,16 @@ puts "Simulation started!"
 #$ns at 0.0 "check_fin"
 
 proc check_fin {} {
-    global ns agtagr0 agtagr_b numflows
+    global ns agtagr0 agtagr_2_3 numflows
     set nrf [$agtagr0 set stat_nr_finflow]
     if { $nrf > $numflows } {
 	$agtagr0 statistics
 	finish
     }
 	
-    set nrf_b [$agtagr_b set stat_nr_finflow]
+    set nrf_b [$agtagr_2_3 set stat_nr_finflow]
     if { $nrf_b > $numflows } {
-	$agtagr_b statistics
+	$agtagr_2_3 statistics
 	finish
     }
 #puts "nr_finflow $nrf"
@@ -824,33 +822,33 @@ proc check_fin {} {
 
 #############  Queue Monitor   #########################
 set qf [open queue.tr w]
-set qm [$ns monitor-queue $n0 $n1 $qf 0.1]
-$bnecklink queue-sample-timeout
+set qm [$ns monitor-queue $node_(0) $node_(1) $qf 0.1]
+$bnecklink_0_1 queue-sample-timeout
 
 #Added by Babis
 set qf_b [open queue_b.tr w]
-set qm_b [$ns monitor-queue $n0 $n2 $qf_b 0.1]
-$bnecklink_b queue-sample-timeout
+set qm_b [$ns monitor-queue $node_(0) $node_(2) $qf_b 0.1]
+$bnecklink_0_2 queue-sample-timeout
 
 $ns at $sim_end "finish"
 
 proc finish {} {
-    global ns qf qf_b flowlog flowlog_b
+    global ns qf qf_b flowlog flowlog_2_3
     global sim_start
 
-    global rcplog rcplog_b
+    global rcplog_0_1 rcplog_0_2
 
     $ns flush-trace
     close $qf
     close $qf_b
     close $flowlog
-    close $flowlog_b
+    close $flowlog_2_3
 
 #    close $nf
 #    close $tf	
 
-    close $rcplog
-    close $rcplog_b
+    close $rcplog_0_1
+    close $rcplog_0_2
 
     set t [clock seconds]
     puts "Simulation Finished!"
