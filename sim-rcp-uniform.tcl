@@ -725,32 +725,19 @@ $ns duplex-link $node_(4) $node_(3) [set link_rate_1000Mb]Gb $mean_link_delay Dr
 
 # The 2nd flow
 
-$ns duplex-link $node_(2) $node_(1) [set link_rate_2000Mb]Gb $mean_link_delay DropTail/RCP
-$ns duplex-link $node_(4) $node_(5) [set link_rate_2000Mb]Gb $mean_link_delay DropTail/RCP
+$ns duplex-link $node_(2) $node_(1) [set link_rate_1000Mb]Gb $mean_link_delay DropTail/RCP
+$ns duplex-link $node_(4) $node_(5) [set link_rate_1000Mb]Gb $mean_link_delay DropTail/RCP
 
 # The bottleneck
 
 $ns duplex-link $node_(1) $node_(4) [set link_rate_2400Mb]Gb $mean_link_delay DropTail/RCP
 
 set bottleneck [$ns link $node_(1) $node_(4)]
+set bottleneck [$ns link $node_(0) $node_(1)]
+set bottleneck [$ns link $node_(4) $node_(3)]
+set bottleneck [$ns link $node_(2) $node_(1)]
+set bottleneck [$ns link $node_(4) $node_(5)]
 
-#mutli-line comment
-if 0 {
-set n0    [$ns node]
-set n1    [$ns node]
-
-# Babis
-set n2	[$ns node]
-
-$ns duplex-link $n0 $n1	[set link_rate]Gb $mean_link_delay DropTail/RCP
-# Babis
-$ns duplex-link $n0 $n2	[set link_rate_b]Gb $mean_link_delay_b DropTail/RCP
-
-set bnecklink [$ns link $n0 $n1] 
-#Add by Babis
-set bnecklink_b [$ns link $n0 $n2]
-}
-# end of multi-line comment
 
 #############################################################
 #Only for RCP
@@ -764,114 +751,72 @@ set link_0_1 [$ns link $node_(0) $node_(1)]
 set queue_0_1 [$link_0_1 queue]
 $queue_0_1 set-link-capacity [expr $link_rate_1000Mb * 125000000.0]
 
+set link_1_0 [$ns link $node_(1) $node_(0)]
+set queue_1_0 [$link_0_1 queue]
+$queue_1_0 set-link-capacity [expr $link_rate_1000Mb * 125000000.0]
+
 set link_4_3 [$ns link $node_(4) $node_(3)]
 set queue_4_3 [$link_4_3 queue]
 $queue_4_3 set-link-capacity [expr $link_rate_1000Mb * 125000000.0]
 
+set link_3_4 [$ns link $node_(3) $node_(4)]
+set queue_3_4 [$link_3_4 queue]
+$queue_3_4 set-link-capacity [expr $link_rate_1000Mb * 125000000.0]
 
 # The second RCP flow
 
 set link_2_1 [$ns link $node_(2) $node_(1)]
 set queue_2_1 [$link_2_1 queue]
-$queue_2_1 set-link-capacity [expr $link_rate_2000Mb * 125000000.0]
+$queue_2_1 set-link-capacity [expr $link_rate_1000Mb * 125000000.0]
+
+set link_1_2 [$ns link $node_(1) $node_(2)]
+set queue_1_2 [$link_1_2 queue]
+$queue_1_2 set-link-capacity [expr $link_rate_1000Mb * 125000000.0]
 
 set link_4_5 [$ns link $node_(4) $node_(5)]
 set queue_4_5 [$link_4_5 queue]
-$queue_4_5 set-link-capacity [expr $link_rate_2000Mb * 125000000.0]
+$queue_4_5 set-link-capacity [expr $link_rate_1000Mb * 125000000.0]
 
+set link_5_4 [$ns link $node_(5) $node_(4)]
+set queue_5_4 [$link_5_4 queue]
+$queue_5_4 set-link-capacity [expr $link_rate_1000Mb * 125000000.0]
 
 # The bottleneck load information
 set link_1_4 [$ns link $node_(1) $node_(4)]
 set queue_1_4 [$link_1_4 queue]
 $queue_1_4 set-link-capacity [expr $link_rate_2400Mb * 125000000.0]
 
-##
-## RCP log trace file must be added here like the following
-##
-
-#multi-line comment
-if 0 {
-
-set l0 [$ns link $n0 $n1]
-set q0 [$l0 queue]
-$q0 set-link-capacity [expr $link_rate * 125000000.0]
-set l1 [$ns link $n1 $n0]
-set q1 [$l1 queue]
-$q1 set-link-capacity [expr $link_rate * 125000000.0]
-$q0 set print_status_ 1
-set rcplog [open rcp_status.tr w]
-$q0 attach $rcplog
-$q1 set print_status_ 0
-#Gettter TCL GET
-#set printstatus [$q1 set print_status_]
-#puts "Print status: $printstatus"
-
-#Added by Babis
-
-set l2 [$ns link $n0 $n2]
-set q2 [$l2 queue]
-$q2 set-link-capacity [expr $link_rate_b * 125000000.0]
-set l3 [$ns link $n2 $n0]
-set q3 [$l3 queue]
-$q3 set-link-capacity [expr $link_rate_b * 125000000.0]
-$q2 set print_status_ 1
-set rcplog_b [open rcp_status_b.tr w]
-$q2 attach $rcplog_b
-$q3 set print_status_ 0
-}
-#end of multiline comment
+set link_4_1 [$ns link $node_(4) $node_(1)]
+set queue_4_1 [$link_4_1 queue]
+$queue_4_1 set-link-capacity [expr $link_rate_2400Mb * 125000000.0]
 
 #############  Agents          #########################
-#set agtagr0 [new Agent_Aggr_pair]
 set agtagr_0_3 [new Agent_Aggr_pair]
 set agtagr_2_5 [new Agent_Aggr_pair]
 
 puts "Creating initial $init_nr_flow agents ..."; flush stdout
 
 #The first flow 
-$agtagr_0_3 setup $node_(0) $node_(3) 1 $init_nr_flow "RCP_pair" $link_rate_1000Mb
+$agtagr_0_3 setup $node_(0) $node_(3) 1 $init_nr_flow_b "RCP_pair" $link_rate_1000Mb
 set flowlog_0_3 [open flow_0_3.tr w]
 $agtagr_0_3 attach-logfile $flowlog_0_3
 
 #The second flow
-$agtagr_2_5 setup $node_(2) $node_(5) 2 $init_nr_flow "RCP_pair" $link_rate_2000Mb
-
-#MLC
-if 0 {
-$agtagr0 setup $n0 $n1 0 $init_nr_flow "RCP_pair" $link_rate
-set flowlog [open flow.tr w]
-$agtagr0 attach-logfile $flowlog
-}
-#EMLC
+$agtagr_2_5 setup $node_(2) $node_(5) 2 $init_nr_flow_b "RCP_pair" $link_rate_1000Mb
+set flowlog_2_5 [open flow_2_5.tr w]
+$agtagr_2_5 attach-logfile $flowlog_2_5
 
 #  Babis 
-
-#MLC
-if 0 {
-set agtagr_b [new Agent_Aggr_pair]
-$agtagr_b setup $n0 $n2 1 $init_nr_flow "RCP_pair" $link_rate
-set flowlog_b [open flow_b.tr w]
-$agtagr_b attach-logfile $flowlog_b
-}
-#EMLC
 
 puts "Initial agent creation done";flush stdout
 
 
 #For Poisson/Uniform
 $agtagr_0_3 set_PUarrival_process $lambda_1000Mb $minPkts $maxPkts $arrseed $pktseed
-#$agtagr_2_5 set_PUarrival_process $lambda_2000Mb $minPkts $maxPkts $arrseed $pktseed
+$agtagr_2_5 set_PUarrival_process $lambda_1000Mb $minPkts $maxPkts $arrseed $pktseed
 
 $agtagr_0_3 init_schedule
-#$agtagr_2_5 init_schedule
-
-
-#$agtagr0 set_PUarrival_process $lambda $minPkts $maxPkts $arrseed $pktseed
-#$agtagr0 init_schedule
-
-# Babis
-#$agtagr_b set_PUarrival_process $lambda_b $minPkts_b $maxPkts_b $arrseed $pktseed
-#$agtagr_b init_schedule
+$agtagr_2_5 init_schedule
 
 
 puts "Simulation started!"
@@ -894,40 +839,12 @@ proc check_fin {} {
 	finish
     }
 
-# Multi-line comment
-if 0 {
-    set nrf [$agtagr0 set stat_nr_finflow]
-    if { $nrf > $numflows } {
-	$agtagr0 statistics
-	finish
-    }
-	
-    set nrf_b [$agtagr_b set stat_nr_finflow]
-    if { $nrf_b > $numflows } {
-	$agtagr_b statistics
-	finish
-    }
-}
-# End of multi-line comment
-
 #puts "nr_finflow $nrf"
     $ns after 1 "check_fin"
 }
 
 
 #############  Queue Monitor   #########################
-# Multi-line comment
-if 0 {
-set qf [open queue.tr w]
-set qm [$ns monitor-queue $n0 $n1 $qf 0.1]
-$bnecklink queue-sample-timeout
-
-# Babis
-set qf_b [open queue_b.tr w]
-set qm_b [$ns monitor-queue $n0 $n2 $qf_b 0.1]
-$bnecklink_b queue-sample-timeout
-}
-# End of multi-line comment
 
 $ns at $sim_end "finish"
 
