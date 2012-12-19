@@ -706,6 +706,14 @@ puts "queueSize $queueSize packets"
 #  node_(2)
 #
 
+# New Testing Topology
+#  node_(1)
+#     \	2.4G	 2.4G        1G
+#	node_(0) -- node_(3) -- node_(4)
+#     / 2.4G
+#  node_(2)
+#
+
 set numnodes 6.0
 ##The number of the nodes generated
 
@@ -714,15 +722,15 @@ set node_($i) [$ns node]
 }
 
 $ns duplex-link $node_(0) $node_(1)	[set link_rate]Gb $mean_link_delay DropTail/RCP
-#Added By Babis
-$ns duplex-link $node_(0) $node_(2)	[set link_rate_b]Gb $mean_link_delay_b DropTail/RCP
+$ns duplex-link $node_(0) $node_(2)	[set link_rate]Gb $mean_link_delay DropTail/RCP
 $ns duplex-link $node_(0) $node_(3) 	[set link_rate]Gb $mean_link_delay DropTail/RCP
-
+$ns duplex-link $node_(3) $node_(4) 	[set link_rate_1Gb]Gb $mean_link_delay DropTail/RCP
 
 set bnecklink_0_1 [$ns link $node_(0) $node_(1)] 
 #Add by Babis
 set bnecklink_0_2 [$ns link $node_(0) $node_(2)]
 set bnecklink_0_3 [$ns link $node_(0) $node_(3)]
+set bnecklink_3_4 [$ns link $node_(3) $node_(4)]
 
 #############################################################
 #Only for RCP
@@ -754,6 +762,7 @@ $q_0_2 attach $rcplog_0_2
 $q_2_0 set print_status_ 0
 
 
+
 set l_0_3 [$ns link $node_(0) $node_(3)]
 set q_0_3 [$l_0_3 queue]
 $q_0_3 set-link-capacity [expr $link_rate * 125000000.0]
@@ -765,6 +774,17 @@ set rcplog_0_3 [open rcp_status_0_3.tr w]
 $q_0_3 attach $rcplog_0_3
 $q_3_0 set print_status_ 0
 
+
+set l_3_4 [$ns link $node_(3) $node_(4)]
+set q_3_4 [$l_3_4 queue]
+$q_3_4 set-link-capacity [expr $link_rate * 125000000.0]
+set l_4_3 [$ns link $node_(4) $node_(3)]
+set q_4_3 [$l_4_3 queue]
+$q_4_3 set-link-capacity [expr $link_rate * 125000000.0]
+$q_3_4 set print_status_ 1
+set rcplog_3_4 [open rcp_status_3_4.tr w]
+$q_3_4 attach $rcplog_3_4
+$q_4_3 set print_status_ 0
 
 #############  Agents          #########################
 set agtagr0 [new Agent_Aggr_pair]
