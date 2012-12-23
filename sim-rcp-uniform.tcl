@@ -791,9 +791,6 @@ $agtagr0 setup $node_(1) $node_(4) 0 $init_nr_flow "RCP_pair" $link_rate
 set flowlog_1_4 [open flow_1_4.tr w]
 $agtagr0 attach-logfile $flowlog_1_4
 
-
-# Added by Babis 
-
 set agtagr_2_3 [new Agent_Aggr_pair]
 $agtagr_2_3 setup $node_(2) $node_(3) 1 $init_nr_flow "RCP_pair" $link_rate_1Gb
 set flowlog_2_3 [open flow_2_3.tr w]
