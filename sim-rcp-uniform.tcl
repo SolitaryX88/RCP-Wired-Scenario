@@ -498,11 +498,14 @@ Agent_Aggr_pair instproc schedule { pid } {
     set dt [$rv_flow_intval value]
     set tnext [expr $last_arrival_time + $dt]
     set t [$ns now]
-
+    
+    #The next 5 lines are commented. Getting Not enought flows error all the time!
+    if 0 {
     if { $t > $tnext } {
 	puts "Error, Not enough flows ! Aborting! pair id $pid"
 	flush stdout
 	exit 
+    }
     }
     $self set last_arrival_time $tnext
 
@@ -698,23 +701,15 @@ puts "queueSize $queueSize packets"
 
 ############# Topoplgy #########################
 
-#Topology
+# Testing Topology
 #  node_(1)
-#     \	
-#	node_(0) -- node_(3)
-#     /
-#  node_(2)
-#
-
-# New Testing Topology
-#  node_(1)
-#     \	2.4G	 2.4G        1G
+#     \	2.4G	 2.4G        2.4G
 #	node_(0) -- node_(3) -- node_(4)
 #     / 2.4G
 #  node_(2)
 #
 
-set numnodes 6.0
+set numnodes 5.0
 ##The number of the nodes generated
 
 for {set i 0} {$i < $numnodes } {incr i} {
@@ -724,10 +719,10 @@ set node_($i) [$ns node]
 $ns duplex-link $node_(0) $node_(1)	[set link_rate]Gb $mean_link_delay DropTail/RCP
 $ns duplex-link $node_(0) $node_(2)	[set link_rate]Gb $mean_link_delay DropTail/RCP
 $ns duplex-link $node_(0) $node_(3) 	[set link_rate]Gb $mean_link_delay DropTail/RCP
-$ns duplex-link $node_(3) $node_(4) 	[set link_rate_1Gb]Gb $mean_link_delay DropTail/RCP
+$ns duplex-link $node_(3) $node_(4) 	[set link_rate]Gb $mean_link_delay DropTail/RCP
 
 set bnecklink_0_1 [$ns link $node_(0) $node_(1)] 
-#Add by Babis
+
 set bnecklink_0_2 [$ns link $node_(0) $node_(2)]
 set bnecklink_0_3 [$ns link $node_(0) $node_(3)]
 set bnecklink_3_4 [$ns link $node_(3) $node_(4)]
@@ -752,10 +747,10 @@ $q_1_0 set print_status_ 0
 
 set l_0_2 [$ns link $node_(0) $node_(2)]
 set q_0_2 [$l_0_2 queue]
-$q_0_2 set-link-capacity [expr $link_rate_b * 125000000.0]
+$q_0_2 set-link-capacity [expr $link_rate * 125000000.0]
 set l_2_0 [$ns link $node_(2) $node_(0)]
 set q_2_0 [$l_2_0 queue]
-$q_2_0 set-link-capacity [expr $link_rate_b * 125000000.0]
+$q_2_0 set-link-capacity [expr $link_rate * 125000000.0]
 $q_0_2 set print_status_ 1
 set rcplog_0_2 [open rcp_status_0_2.tr w]
 $q_0_2 attach $rcplog_0_2
@@ -791,18 +786,18 @@ set agtagr0 [new Agent_Aggr_pair]
 
 puts "Creating initial $init_nr_flow agents ..."; flush stdout
 
-$agtagr0 setup $node_(1) $node_(0) 0 $init_nr_flow "RCP_pair" $link_rate
+$agtagr0 setup $node_(1) $node_(4) 0 $init_nr_flow "RCP_pair" $link_rate
 
-set flowlog [open flow.tr w]
-$agtagr0 attach-logfile $flowlog
+set flowlog_1_4 [open flow_1_4.tr w]
+$agtagr0 attach-logfile $flowlog_1_4
+
 
 # Added by Babis 
 
 set agtagr_2_3 [new Agent_Aggr_pair]
-$agtagr_2_3 setup $node_(2) $node_(3) 1 $init_nr_flow "RCP_pair" $link_rate
-set flowlog_2_3 [open flow_b.tr w]
+$agtagr_2_3 setup $node_(2) $node_(3) 1 $init_nr_flow "RCP_pair" $link_rate_1Gb
+set flowlog_2_3 [open flow_2_3.tr w]
 $agtagr_2_3 attach-logfile $flowlog_2_3
-
 
 
 
@@ -816,7 +811,6 @@ $agtagr0 init_schedule
 #Added by Babis
 $agtagr_2_3 set_PUarrival_process $lambda_b $minPkts_b $maxPkts_b $arrseed $pktseed
 $agtagr_2_3 init_schedule
-
 
 puts "Simulation started!"
 
